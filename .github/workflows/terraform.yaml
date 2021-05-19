@@ -11,8 +11,11 @@ jobs:
     name: "Terraform"
     runs-on: ubuntu-latest
     steps:
-      - name: Map branch to environment
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
+      - name: Set env to staging
+        if: endsWith(github.ref, '/staging')
+        run: |
+          echo "::set-env name=TF_WORKSPACE::dev"
+      - name: Set env to production
+        if: endsWith(github.ref, '/main')
+        run: |
+          echo "::set-env name=TF_WORKSPACE::prod"
