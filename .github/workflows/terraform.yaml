@@ -14,8 +14,8 @@ jobs:
       - name: Set env to staging
         if: endsWith(github.ref, '/staging')
         run: |
-          echo "::set-env name=TF_WORKSPACE::dev"
+          echo "TF_WORKSPACE=dev" >> $GITHUB_ENV
       - name: Set env to production
         if: endsWith(github.ref, '/main')
         run: |
-          echo "::set-env name=TF_WORKSPACE::prod"
+          echo "TF_WORKSPACE=prod" >> $GITHUB_ENV
