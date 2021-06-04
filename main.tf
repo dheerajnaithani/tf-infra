@@ -25,5 +25,5 @@ provider "aws" {
 }
 
 resource "aws_ecr_repository" "test_ecr_repo" {
-  name = "test-ecr-repo"
+  name = "${var.env_name}-ecr-repo"
 }
