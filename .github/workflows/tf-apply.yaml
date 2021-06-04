@@ -1,6 +1,12 @@
 name: "Terraform Apply"
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log Level'
+        required: false
+        default: 'warning'
 
 jobs:
   terraform:
