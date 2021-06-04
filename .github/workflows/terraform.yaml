@@ -31,11 +31,11 @@ jobs:
 
       - name: Terraform Format
         id: fmt
-        run: terraform fmt -check
+        run: terraform fmt -check -var-file=env/${TF_WORKSPACE}/variables.tfvars
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: terraform init -var-file=env/${TF_WORKSPACE}/variables.tfvars
 
       - name: Terraform Plan
         id: plan
