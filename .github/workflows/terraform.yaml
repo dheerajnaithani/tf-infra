@@ -31,7 +31,7 @@ jobs:
 
       - name: Terraform Format
         id: fmt
-        run: terraform fmt -check -var-file=env/${TF_WORKSPACE}/variables.tfvars
+        run: terraform fmt -check -recursive
 
       - name: Terraform Init
         id: init
