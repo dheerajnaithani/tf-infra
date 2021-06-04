@@ -13,6 +13,11 @@ jobs:
     name: "Terraform"
     runs-on: ubuntu-latest
     steps:
+      - name: Check if Terrafrom Apply can be run on this commit-id
+        if: !( startsWith(github.ref, 'dev/') || startsWith(github.ref, 'prod') )
+        run: |
+          echo "Cannot run Terraform Apply"
+          exit 0
       - name: Set env to dev
         if: startsWith(github.ref, 'dev/')
         run: |
