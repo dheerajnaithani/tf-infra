@@ -1,12 +1,6 @@
 name: "Terraform Apply"
 
 on: workflow_dispatch
-  push:
-    branches:
-      - "!*"
-    tags:
-      - "dev/*"
-      - "prod/*"
 
 jobs:
   terraform:
