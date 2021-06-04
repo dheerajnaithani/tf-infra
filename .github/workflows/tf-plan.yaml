@@ -1,0 +1,50 @@
+name: "Terraform Plan"
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set env to dev
+        if: endsWith(github.ref, '/staging')
+        run: |
+          echo "TF_WORKSPACE=dev" >> $GITHUB_ENV
+      - name: Set env to prod
+        if: endsWith(github.ref, '/main')
+        run: |
+          echo "TF_WORKSPACE=prod" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          # terraform_version: 0.13.0:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: steps.plan.outcome == 'failure'
+        run: terraform apply -auto-approve

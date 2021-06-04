@@ -1,10 +1,12 @@
-name: "Terraform"
+name: "Terraform Apply"
 
-on:
+on: workflow_dispatch
   push:
     branches:
-      - main
-      - staging
+      - "!*"
+    tags:
+      - "dev/*"
+      - "prod/*"
 
 jobs:
   terraform:
@@ -12,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set env to dev
-        if: endsWith(github.ref, '/staging')
+        if: startsWith(github.ref, 'dev/')
         run: |
           echo "TF_WORKSPACE=dev" >> $GITHUB_ENV
       - name: Set env to prod
-        if: endsWith(github.ref, '/main')
+        if: startsWith(github.ref, 'prod')
         run: |
           echo "TF_WORKSPACE=prod" >> $GITHUB_ENV
 
