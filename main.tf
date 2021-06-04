@@ -24,6 +24,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-esource "aws_ecr_repository" "test_ecr_repo" {
+resource "aws_ecr_repository" "test_ecr_repo" {
   name = "test-ecr-repo"
 }
