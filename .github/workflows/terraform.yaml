@@ -35,11 +35,11 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init -var-file=env/${TF_WORKSPACE}/variables.tfvars
+        run: terraform init
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -var-file=env/${TF_WORKSPACE}/variables.tfvars
+        run: terraform plan -no-color -var-file "env/${TF_WORKSPACE}/variables.tfvars"
         continue-on-error: true
 
       - name: Terraform Plan Status
