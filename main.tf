@@ -15,7 +15,7 @@ terraform {
     organization = "zest-tech"
 
     workspaces {
-      prefix = "base-infra"
+      prefix = "base-infra-"
     }
   }
 }
