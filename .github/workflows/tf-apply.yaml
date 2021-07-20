@@ -13,17 +13,12 @@ jobs:
     name: "Terraform"
     runs-on: ubuntu-latest
     steps:
-      - name: Check if Terrafrom Apply can be run on this commit-id
-        if: !( startsWith(github.ref, 'dev/') || startsWith(github.ref, 'prod') )
-        run: |
-          echo "Cannot run Terraform Apply"
-          exit 0
       - name: Set env to dev
-        if: startsWith(github.ref, 'dev/')
+        if: endsWith(github.ref, '/staging')
         run: |
           echo "TF_WORKSPACE=dev" >> $GITHUB_ENV
       - name: Set env to prod
-        if: startsWith(github.ref, 'prod')
+        if: endsWith(github.ref, '/main')
         run: |
           echo "TF_WORKSPACE=prod" >> $GITHUB_ENV
 
@@ -33,7 +28,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          # terraform_version: 0.13.0:
+          terraform_version: ~1.0.2
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Format
