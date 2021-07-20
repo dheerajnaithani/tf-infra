@@ -25,5 +25,6 @@ provider "aws" {
 }
 
 module "frontend" {
-  source = "./frontend"
+  source   = "./frontend"
+  env_name = var.env_name
 }

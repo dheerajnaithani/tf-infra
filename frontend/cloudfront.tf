@@ -150,7 +150,7 @@ module "s3_one" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 2.0"
 
-  bucket        = "${local.subdomain}-${env_name}-ui-deploy"
+  bucket        = "${local.subdomain}-${var.env_name}-ui-deploy"
   force_destroy = true
 }
 
@@ -158,7 +158,7 @@ module "log_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 2.0"
 
-  bucket = "logs-${local.subdomain}-${env_name}"
+  bucket = "logs-${local.subdomain}-${var.env_name}"
   acl    = null
   grant = [
     {
