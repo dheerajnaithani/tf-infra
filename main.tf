@@ -24,6 +24,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-module frontend {
+module "frontend" {
   source = "./frontend"
 }
