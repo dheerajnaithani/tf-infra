@@ -24,6 +24,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_ecr_repository" "test_ecr_repo" {
-  name = "${var.env_name}-ecr-repo"
+module frontend {
+  source = "./frontend"
 }
