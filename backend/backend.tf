@@ -88,7 +88,18 @@ resource "aws_alb" "backend-alb" {
   security_groups = [module.alb_security_group.security_group_id]
 
 }
+resource "aws_alb_listener" "backend-alb-http-listener" {
+  load_balancer_arn = aws_alb.backend-alb.arn
 
+  port     = "80"
+  protocol = "HTTP"
+  # Default action, and other parameters removed for BLOG
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend-alb-tg.arn
+
+  }
+}
 
 
 resource "aws_lb_target_group" "backend-alb-tg" {
