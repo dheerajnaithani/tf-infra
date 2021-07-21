@@ -1,3 +1,6 @@
+locals {
+  region = "us-east-1"
+}
 terraform {
   required_providers {
     aws = {
@@ -21,10 +24,17 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = local.region
 }
-
+/*
 module "frontend" {
   source   = "./frontend"
   env_name = var.env_name
+}
+*/
+
+module "backend" {
+  source             = "./backend"
+  region             = local.region
+  ec2_instance_count = 3
 }
