@@ -127,31 +127,25 @@ module "alb_security_group" {
 ##################
 # Extra resources
 ##################
-data "aws_ami" "amazon_linux" {
+
+data "aws_ami" "amazon-linux-2" {
   most_recent = true
-
-  owners = ["amazon"]
-
-  filter {
-    name = "name"
-
-    values = [
-      "amzn-ami-hvm-*-x86_64-gp2",
-    ]
-  }
+  owners      = ["amazon"]
 
   filter {
-    name = "owner-alias"
-
-    values = [
-      "amazon",
-    ]
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
   }
 }
 
-resource "aws_instance" "ec2" {
+resource "aws_instance" "ec2-private" {
   count         = var.ec2_instance_count
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t3.nano"
+  ami           = data.aws_ami.amazon-linux-2.id
+  name          = "backend-server-${count.index}"
+  instance_type = "t2.micro"
   subnet_id     = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
+  tags = {
+    environment = var.env_name,
+    instance-ordinal : count.index
+  }
 }
