@@ -82,33 +82,35 @@ module "api_gateway_security_group" {
 ############################
 # Application Load Balancer
 ############################
-
-module "alb" {
-  source  = "terraform-aws-modules/alb/aws"
-  version = "~> 6.0"
-
-  name = "alb-backend-${var.env_name}"
-
-  vpc_id          = module.vpc.vpc_id
-  security_groups = [module.alb_security_group.security_group_id]
+resource "aws_alb" "backend-alb" {
+  name            = "backend-alb-${var.env_name}"
   subnets         = module.vpc.public_subnets
+  security_groups = [module.alb_security_group.security_group_id]
 
-  http_tcp_listeners = [
-    {
-      port               = 80
-      protocol           = "HTTP"
-      target_group_index = 0
-      action_type        = "forward"
-    }
-  ]
-
-  target_groups = [
-    {
-      name_prefix = "l1-"
-      target_type = "lambda"
-    }
-  ]
 }
+
+
+
+resource "aws_lb_target_group" "backend-alb-tg" {
+  name     = "backend-alb-tg-${var.env_name}"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+  health_check {
+    path = "/"
+    port = 80
+  }
+
+}
+
+resource "aws_lb_target_group_attachment" "backend-alb-tg-attachment" {
+  count            = var.ec2_instance_count
+  target_group_arn = aws_lb_target_group.backend-alb-tg.arn
+  target_id        = aws_instance.ec2-private.*.id[count.index]
+  port             = 80
+
+}
+
 
 module "alb_security_group" {
   source  = "terraform-aws-modules/security-group/aws"
@@ -127,7 +129,7 @@ module "alb_security_group" {
 ##################
 # Extra resources
 ##################
-
+/*
 data "aws_ami" "amazon-linux-2" {
   most_recent = true
   owners      = ["amazon"]
@@ -137,7 +139,7 @@ data "aws_ami" "amazon-linux-2" {
     values = ["amzn2-ami-hvm*"]
   }
 }
-
+*/
 module "iam_assumable_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   version = "~> 3.0"
@@ -159,7 +161,7 @@ module "iam_assumable_role" {
 
 resource "aws_instance" "ec2-private" {
   count = var.ec2_instance_count
-  ami   = data.aws_ami.amazon-linux-2.id
+  ami   = "ami-0814ae54b993366ed"
 
   instance_type        = "t2.micro"
   subnet_id            = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
@@ -169,4 +171,24 @@ resource "aws_instance" "ec2-private" {
     instance-ordinal = count.index,
     name             = "backend-server-${count.index}"
   }
+}
+
+resource "aws_security_group" "backened_security_group" {
+  name        = "backened-sg-${var.env_name}"
+  description = "This is for ${var.env_name} security group"
+  vpc_id      = module.vpc.vpc_id
+  tags = {
+    Name = "$backened-sg-${var.env_name}"
+  }
+}
+
+resource "aws_security_group_rule" "allow_incoming_traffic_from_vpc" {
+
+  type              = "ingress"
+  protocol          = "-1"
+  cidr_blocks       = [module.vpc.vpc_cidr_block]
+  security_group_id = aws_security_group.backened_security_group.id
+  description       = "allows all incoming traffic from vpc"
+  from_port         = 0
+  to_port           = 0
 }
