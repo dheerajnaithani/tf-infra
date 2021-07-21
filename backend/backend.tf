@@ -138,14 +138,35 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 
-resource "aws_instance" "ec2-private" {
-  count         = var.ec2_instance_count
-  ami           = data.aws_ami.amazon-linux-2.id
-  name          = "backend-server-${count.index}"
-  instance_type = "t2.micro"
-  subnet_id     = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
+module "iam_assumable_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  version = "~> 3.0"
+
+  trusted_role_services = [
+    "ec2.amazonaws.com"
+  ]
+
+  create_role             = true
+  create_instance_profile = true
+
+  role_name         = "backend-server-${var.env_name}-iam-role"
+  role_requires_mfa = false
+
   tags = {
-    environment = var.env_name,
-    instance-ordinal : count.index
+    Role = "backend-server-${var.env_name}-iam-role"
+  }
+}
+
+resource "aws_instance" "ec2-private" {
+  count = var.ec2_instance_count
+  ami   = data.aws_ami.amazon-linux-2.id
+
+  instance_type        = "t2.micro"
+  subnet_id            = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
+  iam_instance_profile = module.iam_assumable_role.this_iam_instance_profile_name
+  tags = {
+    environment      = var.env_name,
+    instance-ordinal = count.index,
+    name             = "backend-server-${count.index}"
   }
 }
