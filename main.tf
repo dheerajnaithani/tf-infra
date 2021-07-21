@@ -35,6 +35,7 @@ module "frontend" {
 
 module "backend" {
   source             = "./backend"
+  env_name           = var.env_name
   region             = local.region
   ec2_instance_count = 3
 }

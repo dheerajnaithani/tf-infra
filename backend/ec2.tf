@@ -153,5 +153,5 @@ resource "aws_instance" "ec2" {
   count         = var.ec2_instance_count
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t3.nano"
-  subnet_id     = tolist(module.vpc.private_subnets)[count.index]
+  subnet_id     = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
 }
