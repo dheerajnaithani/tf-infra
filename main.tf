@@ -1,15 +1,18 @@
+locals {
+  region = "us-east-1"
+}
 terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.26.0"
+      version = "3.50.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.0.1"
+      version = "3.1.0"
     }
   }
-  required_version = "~> 0.14"
+  required_version = "~> 1.0.2"
 
   backend "remote" {
     organization = "zest-tech"
@@ -21,9 +24,18 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = local.region
 }
+/*
+module "frontend" {
+  source   = "./frontend"
+  env_name = var.env_name
+}
+*/
 
-resource "aws_ecr_repository" "test_ecr_repo" {
-  name = "${var.env_name}-ecr-repo"
+module "backend" {
+  source             = "./backend"
+  env_name           = var.env_name
+  region             = local.region
+  ec2_instance_count = 3
 }
