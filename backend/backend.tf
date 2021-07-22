@@ -1,3 +1,8 @@
+data "aws_security_group" "default" {
+  name   = "default"
+  vpc_id = module.vpc.vpc_id
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = " ~> 3.0"
@@ -20,6 +25,58 @@ module "vpc" {
 
   enable_dns_hostnames = true
   enable_dns_support   = true
+
+  endpoints = {
+    s3 = {
+      service = "s3"
+      tags    = { Name = "s3-endpoint-${var.env_name}" }
+    },
+    ssm = {
+      service             = "ssm"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets,
+      tags                = { Name = "ec2messages-endpoint-${var.env_name}" }
+
+    },
+    ssmmessages = {
+      service             = "ssmmessages"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets
+      tags                = { Name = "ssmmessages-endpoint-${var.env_name}" }
+    },
+    ec2 = {
+      service             = "ec2"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets
+      tags                = { Name = "ec2-endpoint-${var.env_name}" }
+
+    },
+    ec2messages = {
+      service             = "ec2messages"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets
+      tags                = { Name = "ec2messages-endpoint-${var.env_name}" }
+    },
+    kms = {
+      service             = "kms"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets
+      tags                = { Name = "kms-endpoint-${var.env_name}" }
+
+    },
+    codedeploy = {
+      service             = "codedeploy"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets
+      tags                = { Name = "codedeploy-endpoint-${var.env_name}" }
+    },
+    codedeploy_commands_secure = {
+      service             = "codedeploy-commands-secure"
+      private_dns_enabled = true
+      subnet_ids          = module.vpc.private_subnets
+      tags                = { Name = "cd-commands-secure-endpoint-${var.env_name}" }
+    },
+  }
 }
 
 ###################
@@ -227,10 +284,3 @@ module "iam_assumable_role" {
   }
 }
 
-module "session-manager" {
-  source                      = "./session-manager"
-  vpc_id                      = module.vpc.vpc_id
-  private_subnets_cidr_blocks = module.vpc.private_subnets_cidr_blocks
-  private_subnets             = module.vpc.private_subnets
-  env_name                    = var.env_name
-}
