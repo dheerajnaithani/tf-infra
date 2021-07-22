@@ -38,5 +38,5 @@ module "backend" {
   env_name           = var.env_name
   region             = local.region
   ec2_instance_count = 3
-  ami_id             = "ami-0f4ade97da7fc7ef4"
+  ami_id             = "ami-0c7ee241728934e83"
 }
