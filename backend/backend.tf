@@ -24,11 +24,31 @@ module "vpc" {
 
 
 }
+resource "aws_security_group" "endpoints" {
+  description = "Security group for VPC endpoints"
+  name        = "endpoints-sg-${var.env_name}"
+  tags = {
+    Name = "endpoints-sg-${var.env_name}"
+  }
+  vpc_id = module.vpc.vpc_id
+}
+
+
+resource "aws_security_group_rule" "endpoints-https" {
+  cidr_blocks = module.vpc.vpc_cidr_block
+
+  description       = "HTTPS access from private subnet"
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.endpoints.id
+  to_port           = 443
+  type              = "ingress"
+}
 module "vpc_endpoints" {
   source             = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
   version            = " ~> 3.2.0"
   vpc_id             = module.vpc.vpc_id
-  security_group_ids = [module.vpc.default_security_group_id]
+  security_group_ids = [aws_security_group.backend_security_group.id]
 
   endpoints = {
     s3 = {
