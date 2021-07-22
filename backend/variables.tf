@@ -9,3 +9,7 @@ variable "region" {
 variable "ec2_instance_count" {
   type = number
 }
+
+variable "ami_id" {
+  type = string
+}

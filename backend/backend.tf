@@ -217,7 +217,7 @@ module "alb_security_group" {
   version = "~> 4.0"
 
   name        = "alb-sg-${var.env_name}"
-  description = "ALB for example usage"
+  description = "ALB for ${var.env_name} backend servers"
   vpc_id      = module.vpc.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
@@ -242,9 +242,10 @@ data "aws_ami" "amazon-linux-2" {
 */
 
 
+
 resource "aws_instance" "ec2-private" {
   count = var.ec2_instance_count
-  ami   = "ami-0fa8a49db383f956d"
+  ami   = var.ami_id
 
   instance_type        = "t2.micro"
   subnet_id            = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
@@ -258,6 +259,7 @@ resource "aws_instance" "ec2-private" {
     environment      = var.env_name,
     instance-ordinal = count.index,
     Name             = "backend-server-${count.index}"
+    group            = "backend-server-${var.env_name}"
   }
 }
 
