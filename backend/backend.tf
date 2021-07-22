@@ -156,28 +156,11 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 */
-module "iam_assumable_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
-  version = "~> 3.0"
 
-  trusted_role_services = [
-    "ec2.amazonaws.com"
-  ]
-
-  create_role             = true
-  create_instance_profile = true
-
-  role_name         = "backend-server-${var.env_name}-iam-role"
-  role_requires_mfa = false
-
-  tags = {
-    Role = "backend-server-${var.env_name}-iam-role"
-  }
-}
 
 resource "aws_instance" "ec2-private" {
   count = var.ec2_instance_count
-  ami   = "ami-0814ae54b993366ed"
+  ami   = "ami-012b24a419b098435"
 
   instance_type        = "t2.micro"
   subnet_id            = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
@@ -212,4 +195,31 @@ resource "aws_security_group_rule" "allow_incoming_traffic_from_vpc" {
   description       = "allows all incoming traffic from vpc"
   from_port         = 0
   to_port           = 0
+}
+
+#########################################
+# IAM policy
+#########################################
+module "iam_assumable_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  version = "~> 3.0"
+
+  trusted_role_services = [
+    "ec2.amazonaws.com"
+  ]
+
+  create_role             = true
+  create_instance_profile = true
+
+  role_name         = "backend-server-${var.env_name}-iam-role"
+  role_requires_mfa = false
+
+  custom_role_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+
+  ]
+
+  tags = {
+    Role = "backend-server-${var.env_name}-iam-role"
+  }
 }
