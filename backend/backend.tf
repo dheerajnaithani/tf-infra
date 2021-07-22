@@ -190,16 +190,16 @@ resource "aws_instance" "ec2-private" {
   tags = {
     environment      = var.env_name,
     instance-ordinal = count.index,
-    name             = "backend-server-${count.index}"
+    Name             = "backend-server-${count.index}"
   }
 }
 
 resource "aws_security_group" "backend_security_group" {
-  name        = "backened-sg-${var.env_name}"
+  name        = "backend-sg-${var.env_name}"
   description = "This is for ${var.env_name} security group"
   vpc_id      = module.vpc.vpc_id
   tags = {
-    Name = "$backened-sg-${var.env_name}"
+    Name = "backend-sg-${var.env_name}"
   }
 }
 
