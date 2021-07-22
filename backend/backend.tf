@@ -261,6 +261,17 @@ resource "aws_security_group_rule" "allow_incoming_traffic_from_vpc" {
   to_port           = 0
 }
 
+resource "aws_security_group_rule" "allow_outgoing_traffic_to_vpc" {
+
+  type              = "egress"
+  protocol          = "-1"
+  cidr_blocks       = [module.vpc.vpc_cidr_block]
+  security_group_id = aws_security_group.backend_security_group.id
+  description       = "allows all outgoing traffic to vpc"
+  from_port         = 0
+  to_port           = 0
+}
+
 #########################################
 # IAM policy
 #########################################
