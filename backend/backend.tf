@@ -5,7 +5,7 @@ data "aws_security_group" "default" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = " ~> 3.0"
+  version = " ~> 3.2.0"
 
   name = "vpc-link-${var.env_name}"
   cidr = "10.0.0.0/16"
@@ -26,6 +26,11 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
+
+}
+module "vpc_endpoints" {
+  source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
+  version = " ~> 3.2.0"
   endpoints = {
     s3 = {
       service = "s3"
