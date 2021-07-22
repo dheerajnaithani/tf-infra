@@ -1,9 +1,9 @@
 
 resource "aws_security_group" "endpoints" {
   description = "Security group for VPC endpoints"
-  name        = "endpoints-sg"
+  name        = "endpoints-sg-${var.env_name}"
   tags = {
-    Name = "endpoints-sg"
+    Name = "endpoints-sg-${var.env_name}"
   }
   vpc_id = var.vpc_id
 }
@@ -27,7 +27,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
   service_name        = "com.amazonaws.us-east-1.ec2messages"
   subnet_ids          = var.private_subnets
   tags = {
-    Name = "ec2messages-endpoint"
+    Name = "ec2messages-endpoint-${var.env_name}"
   }
   vpc_endpoint_type = "Interface"
   vpc_id            = var.vpc_id
@@ -39,7 +39,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   service_name        = "com.amazonaws.us-east-1.ssmmessages"
   subnet_ids          = var.private_subnets
   tags = {
-    Name = "ssmmessages-endpoint"
+    Name = "ssmmessages-endpoint-${var.env_name}"
   }
   vpc_endpoint_type = "Interface"
   vpc_id            = var.vpc_id
@@ -51,7 +51,7 @@ resource "aws_vpc_endpoint" "ssm" {
   service_name        = "com.amazonaws.us-east-1.ssm"
   subnet_ids          = var.private_subnets
   tags = {
-    Name = "ssm-endpoint"
+    Name = "ssm-endpoint-${var.env_name}"
   }
   vpc_endpoint_type = "Interface"
   vpc_id            = var.vpc_id
