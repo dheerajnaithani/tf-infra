@@ -39,7 +39,7 @@ module "vpc_endpoints" {
       service             = "ssm"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets,
-      tags                = { Name = "ec2messages-endpoint-${var.env_name}" }
+      tags                = { Name = "ssm-endpoint-${var.env_name}" }
 
     },
     ssmmessages = {
