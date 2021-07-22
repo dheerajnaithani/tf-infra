@@ -10,9 +10,8 @@ resource "aws_security_group" "endpoints" {
 
 
 resource "aws_security_group_rule" "endpoints-https" {
-  cidr_blocks = [
-    var.private_subnets_cidr_blocks
-  ]
+  cidr_blocks = var.private_subnets_cidr_blocks
+
   description       = "HTTPS access from private subnet"
   from_port         = 443
   protocol          = "tcp"
