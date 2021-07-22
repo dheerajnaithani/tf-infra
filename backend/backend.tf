@@ -182,6 +182,11 @@ resource "aws_instance" "ec2-private" {
   instance_type        = "t2.micro"
   subnet_id            = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
   iam_instance_profile = module.iam_assumable_role.this_iam_instance_profile_name
+
+  vpc_security_group_ids = [
+    aws_security_group.backend_security_group.id
+  ]
+
   tags = {
     environment      = var.env_name,
     instance-ordinal = count.index,
@@ -189,7 +194,7 @@ resource "aws_instance" "ec2-private" {
   }
 }
 
-resource "aws_security_group" "backened_security_group" {
+resource "aws_security_group" "backend_security_group" {
   name        = "backened-sg-${var.env_name}"
   description = "This is for ${var.env_name} security group"
   vpc_id      = module.vpc.vpc_id
@@ -203,7 +208,7 @@ resource "aws_security_group_rule" "allow_incoming_traffic_from_vpc" {
   type              = "ingress"
   protocol          = "-1"
   cidr_blocks       = [module.vpc.vpc_cidr_block]
-  security_group_id = aws_security_group.backened_security_group.id
+  security_group_id = aws_security_group.backend_security_group.id
   description       = "allows all incoming traffic from vpc"
   from_port         = 0
   to_port           = 0
