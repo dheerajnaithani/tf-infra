@@ -232,4 +232,5 @@ module "session-manager" {
   vpc_id                      = module.vpc.vpc_id
   private_subnets_cidr_blocks = module.vpc.private_subnets_cidr_blocks
   private_subnets             = module.vpc.private_subnets
+  env_name                    = var.env_name
 }
