@@ -48,7 +48,7 @@ module "vpc_endpoints" {
   source             = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
   version            = " ~> 3.2.0"
   vpc_id             = module.vpc.vpc_id
-  security_group_ids = [aws_security_group.backend_security_group.id]
+  security_group_ids = [aws_security_group.endpoints.id]
 
   endpoints = {
     s3 = {
