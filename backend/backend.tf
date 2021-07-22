@@ -163,7 +163,7 @@ data "aws_ami" "amazon-linux-2" {
 
 resource "aws_instance" "ec2-private" {
   count = var.ec2_instance_count
-  ami   = "ami-012b24a419b098435"
+  ami   = "ami-06e68cea5a0eaec86"
 
   instance_type        = "t2.micro"
   subnet_id            = tolist(module.vpc.private_subnets)[count.index % var.ec2_instance_count]
