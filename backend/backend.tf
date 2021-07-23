@@ -22,6 +22,18 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
+  public_dedicated_network_acl  = true
+  private_dedicated_network_acl = true
+  private_inbound_acl_rules     = local.network_acls.default_inbound
+  private_outbound_acl_rules    = local.network_acls.default_outbound
+  public_inbound_acl_rules      = local.network_acls.public_inbound
+  public_outbound_acl_rules     = local.network_acls.public_outbound
+
+
+
+
+
+
 
 }
 resource "aws_security_group" "endpoints" {
@@ -287,7 +299,7 @@ resource "aws_security_group_rule" "allow_outgoing_traffic_to_vpc" {
 
   type              = "egress"
   protocol          = "-1"
-  cidr_blocks       = [module.vpc.vpc_cidr_block]
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.backend_security_group.id
   description       = "allows all outgoing traffic to vpc"
   from_port         = 0
