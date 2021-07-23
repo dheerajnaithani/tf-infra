@@ -16,9 +16,9 @@ resource "aws_codedeploy_deployment_group" "main" {
     for_each = var.instance_name_tags
     content {
       ec2_tag_filter {
-        key   = ec2_tag_set.value["key"]
+        key   = ec2_tag_set.key
         type  = "KEY_AND_VALUE"
-        value = ec2_tag_set.value["value"]
+        value = ec2_tag_set.value
       }
     }
   }
