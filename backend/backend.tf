@@ -1,7 +1,7 @@
 locals {
-  instance_name_tags = map(
-    "group", "backend-server-${var.env_name}"
-  )
+  instance_name_tags = tomap({
+    "group" = "backend-server-${var.env_name}"
+  })
 }
 
 module "vpc" {
