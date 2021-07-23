@@ -1,6 +1,7 @@
 locals {
-  instance_group_tag_key   = "group"
-  instance_group_tag_value = "backend-server-${var.env_name}"
+  instance_name_tags = map(
+    "group", "backend-server-${var.env_name}"
+  )
 }
 
 module "vpc" {
@@ -265,12 +266,13 @@ resource "aws_instance" "ec2-private" {
     aws_security_group.backend_security_group.id
   ]
 
-  tags = {
-    environment                  = var.env_name,
-    instance-ordinal             = count.index,
-    Name                         = "backend-server-${count.index}"
-    local.instance_group_tag_key = local.instance_group_tag_value
-  }
+  tags = merge(
+    local.instance_name_tags,
+    map(
+      instance-ordinal, count.index,
+      Name, "backend-server-${count.index}"
+    )
+  )
 }
 
 resource "aws_security_group" "backend_security_group" {
@@ -333,8 +335,8 @@ module "iam_assumable_role" {
 }
 
 module "code-deploy" {
-  source                   = "./code-deploy"
-  env_name                 = var.env_name
-  instance_group_tag_key   = local.instance_group_tag_key
-  instance_group_tag_value = local.instance_group_tag_value
+  source             = "./code-deploy"
+  env_name           = var.env_name
+  instance_name_tags = local.instance_name_tags
+
 }

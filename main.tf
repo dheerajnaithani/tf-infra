@@ -25,6 +25,9 @@ terraform {
 
 provider "aws" {
   region = local.region
+  default_tags {
+    environment = var.env_name
+  }
 }
 /*
 module "frontend" {
