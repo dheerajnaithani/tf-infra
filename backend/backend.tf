@@ -3,7 +3,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = " ~> 3.2.0"
 
-  name = "vpc-link-${var.env_name}"
+  name = "xeniapp-vpc-${var.env_name}"
   cidr = "10.0.0.0/16"
 
   azs             = ["${var.region}a", "${var.region}b", "${var.region}c"]
@@ -28,11 +28,6 @@ module "vpc" {
   private_outbound_acl_rules    = local.network_acls.default_outbound
   public_inbound_acl_rules      = local.network_acls.public_inbound
   public_outbound_acl_rules     = local.network_acls.public_outbound
-
-
-
-
-
 
 
 }
@@ -252,7 +247,6 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 */
-
 
 
 resource "aws_instance" "ec2-private" {
