@@ -1,3 +1,7 @@
+locals {
+  instance_group_tag_key   = "group"
+  instance_group_tag_value = "backend-server-${var.env_name}"
+}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -262,10 +266,10 @@ resource "aws_instance" "ec2-private" {
   ]
 
   tags = {
-    environment      = var.env_name,
-    instance-ordinal = count.index,
-    Name             = "backend-server-${count.index}"
-    group            = "backend-server-${var.env_name}"
+    environment                  = var.env_name,
+    instance-ordinal             = count.index,
+    Name                         = "backend-server-${count.index}"
+    local.instance_group_tag_key = local.instance_group_tag_value
   }
 }
 
@@ -318,7 +322,8 @@ module "iam_assumable_role" {
   role_requires_mfa = false
 
   custom_role_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 
   ]
 
@@ -327,3 +332,9 @@ module "iam_assumable_role" {
   }
 }
 
+module "code-deploy" {
+  source                   = "./code-deploy"
+  env_name                 = var.env_name
+  instance_group_tag_key   = local.instance_group_tag_key
+  instance_group_tag_value = local.instance_group_tag_value
+}
