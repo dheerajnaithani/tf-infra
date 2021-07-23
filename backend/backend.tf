@@ -268,10 +268,10 @@ resource "aws_instance" "ec2-private" {
 
   tags = merge(
     local.instance_name_tags,
-    map(
-      instance-ordinal, count.index,
-      Name, "backend-server-${count.index}"
-    )
+    tomap({
+      instance-ordinal = count.index,
+      Name             = "backend-server-${count.index}"
+    })
   )
 }
 
