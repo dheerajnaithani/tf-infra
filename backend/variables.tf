@@ -19,5 +19,5 @@ variable "top_level_domain_name" {
 }
 
 variable "customer_domain_prefix" {
-  type = list(string)
+  type = set(string)
 }
