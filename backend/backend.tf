@@ -422,7 +422,7 @@ module "acm" {
     Name = local.domain_name
   }
 }
-resource "aws_route53_record" "a-route-53" {
+resource "aws_route53_record" "a-route-53-api" {
   zone_id = data.aws_route53_zone.top_level_dns_zone.zone_id
   name    = local.domain_name
   type    = "A"
@@ -433,7 +433,7 @@ resource "aws_route53_record" "a-route-53" {
   }
 }
 
-resource "aws_route53_record" "a-route-53" {
+resource "aws_route53_record" "a-route-53-customers" {
   for_each = var.customer_domain_prefix
   zone_id  = data.aws_route53_zone.top_level_dns_zone.zone_id
   name     = "${each.value}.${local.domain_name}"
