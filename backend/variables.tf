@@ -13,3 +13,11 @@ variable "ec2_instance_count" {
 variable "ami_id" {
   type = string
 }
+
+variable "top_level_domain_name" {
+  type = string
+}
+
+variable "customer_domain_prefix" {
+  type = list(string)
+}

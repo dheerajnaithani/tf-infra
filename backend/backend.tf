@@ -2,6 +2,9 @@ locals {
   instance_name_tags = tomap({
     "group" = "backend-server-${var.env_name}"
   })
+  tld_domain_name = trimsuffix(var.top_level_domain_name, ".")
+  domain_name     = "${var.env_name}.api.${local.tld_domain_name}"
+
 }
 
 module "vpc" {
@@ -11,9 +14,18 @@ module "vpc" {
   name = "xeniapp-vpc-${var.env_name}"
   cidr = "10.0.0.0/16"
 
-  azs             = ["${var.region}a", "${var.region}b", "${var.region}c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  azs = [
+    "${var.region}a",
+    "${var.region}b",
+  "${var.region}c"]
+  private_subnets = [
+    "10.0.1.0/24",
+    "10.0.2.0/24",
+  "10.0.3.0/24"]
+  public_subnets = [
+    "10.0.101.0/24",
+    "10.0.102.0/24",
+  "10.0.103.0/24"]
 
   enable_nat_gateway     = true
   single_nat_gateway     = false
@@ -47,7 +59,8 @@ resource "aws_security_group" "endpoints" {
 
 
 resource "aws_security_group_rule" "endpoints-https" {
-  cidr_blocks = [module.vpc.vpc_cidr_block]
+  cidr_blocks = [
+  module.vpc.vpc_cidr_block]
 
   description       = "HTTPS access from private subnet"
   from_port         = 443
@@ -57,60 +70,77 @@ resource "aws_security_group_rule" "endpoints-https" {
   type              = "ingress"
 }
 module "vpc_endpoints" {
-  source             = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version            = " ~> 3.2.0"
-  vpc_id             = module.vpc.vpc_id
-  security_group_ids = [aws_security_group.endpoints.id]
+  source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
+  version = " ~> 3.2.0"
+  vpc_id  = module.vpc.vpc_id
+  security_group_ids = [
+  aws_security_group.endpoints.id]
 
   endpoints = {
     s3 = {
       service = "s3"
-      tags    = { Name = "s3-endpoint-${var.env_name}" }
+      tags = {
+        Name = "s3-endpoint-${var.env_name}"
+      }
     },
     ssm = {
       service             = "ssm"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets,
-      tags                = { Name = "ssm-endpoint-${var.env_name}" }
+      tags = {
+        Name = "ssm-endpoint-${var.env_name}"
+      }
 
     },
     ssmmessages = {
       service             = "ssmmessages"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags                = { Name = "ssmmessages-endpoint-${var.env_name}" }
+      tags = {
+        Name = "ssmmessages-endpoint-${var.env_name}"
+      }
     },
     ec2 = {
       service             = "ec2"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags                = { Name = "ec2-endpoint-${var.env_name}" }
+      tags = {
+        Name = "ec2-endpoint-${var.env_name}"
+      }
 
     },
     ec2messages = {
       service             = "ec2messages"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags                = { Name = "ec2messages-endpoint-${var.env_name}" }
+      tags = {
+        Name = "ec2messages-endpoint-${var.env_name}"
+      }
     },
     kms = {
       service             = "kms"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags                = { Name = "kms-endpoint-${var.env_name}" }
+      tags = {
+        Name = "kms-endpoint-${var.env_name}"
+      }
 
     },
     codedeploy = {
       service             = "codedeploy"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags                = { Name = "codedeploy-endpoint-${var.env_name}" }
+      tags = {
+        Name = "codedeploy-endpoint-${var.env_name}"
+      }
     },
     codedeploy_commands_secure = {
       service             = "codedeploy-commands-secure"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags                = { Name = "cd-commands-secure-endpoint-${var.env_name}" }
+      tags = {
+        Name = "cd-commands-secure-endpoint-${var.env_name}"
+      }
     },
   }
 }
@@ -127,7 +157,8 @@ module "api_gateway" {
   protocol_type = "HTTPS"
 
   cors_configuration = {
-    allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token", "x-amz-user-agent"]
+    allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token",
+    "x-amz-user-agent"]
     allow_methods = ["*"]
     allow_origins = ["*"]
   }
@@ -184,9 +215,10 @@ module "api_gateway_security_group" {
 # Application Load Balancer
 ############################
 resource "aws_alb" "backend-alb" {
-  name            = "backend-alb-${var.env_name}"
-  subnets         = module.vpc.public_subnets
-  security_groups = [module.alb_security_group.security_group_id]
+  name    = "backend-alb-${var.env_name}"
+  subnets = module.vpc.public_subnets
+  security_groups = [
+  module.alb_security_group.security_group_id]
 
 }
 resource "aws_alb_listener" "backend-alb-http-listener" {
@@ -194,6 +226,21 @@ resource "aws_alb_listener" "backend-alb-http-listener" {
 
   port     = "80"
   protocol = "HTTP"
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_alb_listener" "backend-alb-https-listener" {
+  load_balancer_arn = aws_alb.backend-alb.arn
+  certificate_arn   = module.acm.acm_certificate_arn
+  port              = "443"
+  protocol          = "HTTPS"
   # Default action, and other parameters removed for BLOG
   default_action {
     type             = "forward"
@@ -238,10 +285,13 @@ module "alb_security_group" {
   description = "ALB for ${var.env_name} backend servers"
   vpc_id      = module.vpc.vpc_id
 
-  ingress_cidr_blocks = ["0.0.0.0/0"]
-  ingress_rules       = ["http-80-tcp"]
+  ingress_cidr_blocks = [
+  "0.0.0.0/0"]
+  ingress_rules = [
+  "http-80-tcp"]
 
-  egress_rules = ["all-all"]
+  egress_rules = [
+  "all-all"]
 }
 
 ##################
@@ -292,9 +342,10 @@ resource "aws_security_group" "backend_security_group" {
 
 resource "aws_security_group_rule" "allow_incoming_traffic_from_vpc" {
 
-  type              = "ingress"
-  protocol          = "-1"
-  cidr_blocks       = [module.vpc.vpc_cidr_block]
+  type     = "ingress"
+  protocol = "-1"
+  cidr_blocks = [
+  module.vpc.vpc_cidr_block]
   security_group_id = aws_security_group.backend_security_group.id
   description       = "allows all incoming traffic from vpc"
   from_port         = 0
@@ -303,9 +354,10 @@ resource "aws_security_group_rule" "allow_incoming_traffic_from_vpc" {
 
 resource "aws_security_group_rule" "allow_outgoing_traffic_to_vpc" {
 
-  type              = "egress"
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
+  type     = "egress"
+  protocol = "-1"
+  cidr_blocks = [
+  "0.0.0.0/0"]
   security_group_id = aws_security_group.backend_security_group.id
   description       = "allows all outgoing traffic to vpc"
   from_port         = 0
@@ -345,4 +397,50 @@ module "code-deploy" {
   env_name           = var.env_name
   instance_name_tags = local.instance_name_tags
 
+}
+
+data "aws_route53_zone" "top_level_dns_zone" {
+  name         = local.tld_domain_name
+  private_zone = false
+}
+
+
+module "acm" {
+  source  = "terraform-aws-modules/acm/aws"
+  version = "~> 3.0"
+
+  domain_name = local.domain_name
+  zone_id     = coalescelist(data.aws_route53_zone.top_level_dns_zone.*.zone_id)[0]
+
+  subject_alternative_names = [
+    "*.${var.env_name}.api.${local.domain_name}",
+  ]
+
+  wait_for_validation = true
+
+  tags = {
+    Name = local.domain_name
+  }
+}
+resource "aws_route53_record" "a-route-53" {
+  zone_id = data.aws_route53_zone.top_level_dns_zone.zone_id
+  name    = local.domain_name
+  type    = "A"
+  alias {
+    name                   = aws_alb.backend-alb.dns_name
+    zone_id                = aws_alb.backend-alb.zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "a-route-53" {
+  for_each = var.customer_domain_prefix
+  zone_id  = data.aws_route53_zone.top_level_dns_zone.zone_id
+  name     = "${each.value}.${local.domain_name}"
+  type     = "A"
+  alias {
+    name                   = aws_alb.backend-alb.dns_name
+    zone_id                = aws_alb.backend-alb.zone_id
+    evaluate_target_health = false
+  }
 }
