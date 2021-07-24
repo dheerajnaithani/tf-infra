@@ -205,12 +205,12 @@ resource "aws_alb_listener" "backend-alb-http-listener" {
 
 resource "aws_lb_target_group" "backend-alb-tg" {
   name     = "backend-alb-tg-${var.env_name}"
-  port     = 80
+  port     = 3000
   protocol = "HTTP"
   vpc_id   = module.vpc.vpc_id
   health_check {
     path = "/"
-    port = 80
+    port = 3000
   }
 
 }
@@ -219,7 +219,7 @@ resource "aws_lb_target_group_attachment" "backend-alb-tg-attachment" {
   count            = var.ec2_instance_count
   target_group_arn = aws_lb_target_group.backend-alb-tg.arn
   target_id        = aws_instance.ec2-private.*.id[count.index]
-  port             = 80
+  port             = 3000
 
 }
 
