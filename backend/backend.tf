@@ -204,13 +204,19 @@ resource "aws_alb_listener" "backend-alb-http-listener" {
 
 
 resource "aws_lb_target_group" "backend-alb-tg" {
-  name     = "backend-alb-tg-${var.env_name}"
-  port     = 3000
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
+  name_prefix = "alb-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
   health_check {
     path = "/"
     port = 3000
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    Name = "backend-alb-tg-${var.env_name}"
   }
 
 }
