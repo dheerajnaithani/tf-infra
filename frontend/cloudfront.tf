@@ -3,7 +3,7 @@ locals {
   tld_domain_name = trimsuffix(var.top_level_domain_name, ".")
   domain_suffix   = "${var.env_name}.booking.${local.tld_domain_name}"
   customer_dns    = formatlist("%s.${local.domain_suffix}", var.customer_domain_prefix)
-  all_dns         = concat(local.customer_dns, local.domain_suffix)
+  all_dns         = concat(local.customer_dns, [local.domain_suffix])
 
 }
 module "cloudfront" {
