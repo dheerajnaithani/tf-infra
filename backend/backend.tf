@@ -3,7 +3,7 @@ locals {
     "group" = "backend-server-${var.env_name}"
   })
   tld_domain_name = trimsuffix(var.top_level_domain_name, ".")
-  domain_suffix   = "api.${local.tld_domain_name}"
+  domain_suffix   = "${var.env_name}.api.${local.tld_domain_name}"
 
 }
 
@@ -411,22 +411,22 @@ module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 3.0"
 
-  domain_name = "*.${var.env_name}.${local.domain_suffix}"
+  domain_name = "*.${local.domain_suffix}" //${var.env_name}.api.${local.tld_domain_name}
   zone_id     = coalescelist(data.aws_route53_zone.top_level_dns_zone.*.zone_id)[0]
 
   subject_alternative_names = [
-    "${var.env_name}.${local.domain_suffix}", //"api.${local.tld_domain_name}"
+    local.domain_suffix //"api.${local.tld_domain_name}"
   ]
 
   wait_for_validation = true
 
   tags = {
-    Name = "*.${var.env_name}.${local.domain_suffix}"
+    Name = "*.${local.domain_suffix}"
   }
 }
 resource "aws_route53_record" "a-route-53-api" {
   zone_id = data.aws_route53_zone.top_level_dns_zone.zone_id
-  name    = "${var.env_name}.${local.domain_suffix}"
+  name    = local.domain_suffix
   type    = "A"
   alias {
     name                   = aws_alb.backend-alb.dns_name
@@ -438,8 +438,9 @@ resource "aws_route53_record" "a-route-53-api" {
 resource "aws_route53_record" "a-route-53-customers" {
   for_each = var.customer_domain_prefix
   zone_id  = data.aws_route53_zone.top_level_dns_zone.zone_id
-  name     = "${each.value}.${local.domain_suffix}"
-  type     = "A"
+
+  name = "${each.value}.${local.domain_suffix}" // e.g. xeni.dev.api.xeniapp.com
+  type = "A"
   alias {
     name                   = aws_alb.backend-alb.dns_name
     zone_id                = aws_alb.backend-alb.zone_id
