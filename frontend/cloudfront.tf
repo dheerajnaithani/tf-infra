@@ -153,6 +153,9 @@ module "acm" {
   }
 
 }
+##########
+# Route53
+##########
 resource "aws_route53_record" "a-route-53-booking-ui" {
   zone_id = data.aws_route53_zone.top_level_dns_zone.zone_id
   name    = local.domain_suffix
@@ -215,9 +218,7 @@ module "log_bucket" {
 }
 
 
-##########
-# Route53
-##########
+
 
 
 
