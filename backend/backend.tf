@@ -421,7 +421,7 @@ module "acm" {
   wait_for_validation = true
 
   tags = {
-    Name = "*.${local.domain_suffix}"
+    Name = "asterisk.${local.domain_suffix}"
   }
 }
 resource "aws_route53_record" "a-route-53-api" {
