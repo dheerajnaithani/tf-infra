@@ -32,12 +32,14 @@ provider "aws" {
     }
   }
 }
-/*
+
 module "frontend" {
-  source   = "./frontend"
-  env_name = var.env_name
+  source                 = "./frontend"
+  env_name               = var.env_name
+  top_level_domain_name  = "clubxeni.com"
+  customer_domain_prefix = ["xeni", "biirdee"]
 }
-*/
+
 
 module "backend" {
   source                 = "./backend"

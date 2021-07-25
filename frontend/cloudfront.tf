@@ -1,12 +1,15 @@
 locals {
-  domain_name = "xeniapp.com"
-  subdomain   = "new-test"
+
+  tld_domain_name = trimsuffix(var.top_level_domain_name, ".")
+  domain_suffix   = "${var.env_name}.booking.${local.tld_domain_name}"
+  customer_dns    = formatlist("%s.${local.domain_suffix}", var.customer_domain_prefix)
+  all_dns         = concat(local.customer_dns, local.domain_suffix)
+
 }
 module "cloudfront" {
   source = "terraform-aws-modules/cloudfront/aws"
 
-  aliases = [
-  "${local.subdomain}.${local.domain_name}"]
+  aliases = all_dns
 
   comment             = "CloudFront"
   enabled             = true
@@ -27,7 +30,7 @@ module "cloudfront" {
 
   origin = {
     appsync = {
-      domain_name = "appsync.${local.domain_name}"
+      domain_name = "appsync.${local.domain_suffix}"
       custom_origin_config = {
         http_port              = 80
         https_port             = 443
@@ -127,14 +130,14 @@ module "cloudfront" {
 ######
 
 data "aws_route53_zone" "this" {
-  name = local.domain_name
+  name = local.tld_domain_name
 }
 
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 3.0"
 
-  domain_name = "${local.subdomain}.${local.domain_name}"
+  domain_name = "*.${local.domain_suffix}"
   zone_id     = data.aws_route53_zone.this.id
 
 }
@@ -149,7 +152,7 @@ module "s3_one" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 2.0"
 
-  bucket        = "${local.subdomain}-${var.env_name}-ui-deploy"
+  bucket        = "${local.domain_suffix}-ui-deploy"
   force_destroy = true
 }
 
@@ -157,7 +160,7 @@ module "log_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 2.0"
 
-  bucket = "logs-${local.subdomain}-${var.env_name}"
+  bucket = "logs-${local.domain_suffix}-${var.env_name}"
   acl    = null
   grant = [
     {
@@ -188,17 +191,17 @@ module "records" {
 
   zone_id = data.aws_route53_zone.this.zone_id
 
-
   records = [
+    for dns in local.all_dns :
     {
-      name = local.subdomain
+      name = dns
       type = "A"
       alias = {
         name    = module.cloudfront.cloudfront_distribution_domain_name
         zone_id = module.cloudfront.cloudfront_distribution_hosted_zone_id
 
       }
-    },
+    }
   ]
 }
 
