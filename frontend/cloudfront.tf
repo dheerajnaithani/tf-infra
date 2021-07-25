@@ -1,15 +1,16 @@
 locals {
 
-  tld_domain_name = trimsuffix(var.top_level_domain_name, ".")
-  domain_suffix   = "${var.env_name}.booking.${local.tld_domain_name}"
-  customer_dns    = formatlist("%s.${local.domain_suffix}", var.customer_domain_prefix)
-  all_dns         = concat(local.customer_dns, [local.domain_suffix])
+  tld_domain_name     = trimsuffix(var.top_level_domain_name, ".")
+  domain_suffix       = "${var.env_name}.booking.${local.tld_domain_name}"
+  distribution_domain = "*.${local.domain_suffix}"
+  customer_dns        = formatlist("%s.${local.domain_suffix}", var.customer_domain_prefix)
+  all_dns             = concat(local.customer_dns, [local.domain_suffix])
 
 }
 module "cloudfront" {
   source = "terraform-aws-modules/cloudfront/aws"
 
-  aliases = local.all_dns
+  aliases = [local.distribution_domain, local.domain_suffix]
 
   comment             = "frontend-deployment"
   enabled             = true
@@ -129,19 +130,52 @@ module "cloudfront" {
 # ACM
 ######
 
-data "aws_route53_zone" "this" {
-  name = local.tld_domain_name
+data "aws_route53_zone" "top_level_dns_zone" {
+  name         = local.tld_domain_name
+  private_zone = false
 }
 
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 3.0"
 
-  domain_name = "*.${local.domain_suffix}"
-  zone_id     = data.aws_route53_zone.this.id
+  domain_name = local.distribution_domain
+  zone_id     = coalescelist(data.aws_route53_zone.top_level_dns_zone.*.zone_id)[0]
+
+  subject_alternative_names = [
+    local.domain_suffix
+  ]
+
+  wait_for_validation = true
+
+  tags = {
+    Name = "asterisk.${local.domain_suffix}"
+  }
 
 }
+resource "aws_route53_record" "a-route-53-booking-ui" {
+  zone_id = data.aws_route53_zone.top_level_dns_zone.zone_id
+  name    = local.domain_suffix
+  type    = "A"
+  alias {
+    name                   = module.cloudfront.cloudfront_distribution_domain_name
+    zone_id                = module.cloudfront.cloudfront_distribution_hosted_zone_id
+    evaluate_target_health = false
+  }
+}
 
+resource "aws_route53_record" "a-route-53-booking-customers" {
+  for_each = var.customer_domain_prefix
+  zone_id  = data.aws_route53_zone.top_level_dns_zone.zone_id
+
+  name = "${each.value}.${local.domain_suffix}"
+  type = "A"
+  alias {
+    name                   = module.cloudfront.cloudfront_distribution_domain_name
+    zone_id                = module.cloudfront.cloudfront_distribution_hosted_zone_id
+    evaluate_target_health = false
+  }
+}
 #############
 # S3 buckets
 #############
