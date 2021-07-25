@@ -9,9 +9,9 @@ locals {
 module "cloudfront" {
   source = "terraform-aws-modules/cloudfront/aws"
 
-  aliases = all_dns
+  aliases = local.all_dns
 
-  comment             = "CloudFront"
+  comment             = "frontend-deployment"
   enabled             = true
   is_ipv6_enabled     = true
   price_class         = "PriceClass_100"
