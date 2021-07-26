@@ -316,11 +316,13 @@ resource "aws_route53_record" "a-route-53-customers" {
 
 
 module "mongodb" {
-  source             = "./mongodb"
-  region             = var.region
-  atlas_project_id   = "60ae824fac63ca5d66f040b1"
-  atlas_org_id       = "60ae824fac63ca5d66f040ab"
-  subnet_ids         = module.vpc.private_subnets
-  security_group_ids = [aws_security_group.endpoints.id]
-  vpc_id             = module.vpc.vpc_id
+  source              = "./mongodb"
+  region              = var.region
+  atlas_project_id    = "60ae824fac63ca5d66f040b1"
+  atlas_org_id        = "60ae824fac63ca5d66f040ab"
+  subnet_ids          = module.vpc.private_subnets
+  security_group_ids  = [aws_security_group.endpoints.id]
+  vpc_id              = module.vpc.vpc_id
+  MONGODB_PRIVATE_KEY = var.MONGODB_PRIVATE_KEY
+  MONGODB_PUBLIC_KEY  = var.MONGODB_PUBLIC_KEY
 }

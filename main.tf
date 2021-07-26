@@ -12,10 +12,8 @@ terraform {
       version = "3.1.0"
     }
     mongodbatlas = {
-      source      = "mongodb/mongodbatlas"
-      version     = "0.9.1"
-      public_key  = var.MONGODB_PUBLIC_KEY
-      private_key = var.MONGODB_PRIVATE_KEY
+      source  = "mongodb/mongodbatlas"
+      version = "0.9.1"
     }
   }
   required_version = "~> 1.0.2"
@@ -55,4 +53,6 @@ module "backend" {
   ami_id                 = "ami-0f0091613b3422dbe"
   top_level_domain_name  = "clubxeni.com"
   customer_domain_prefix = ["xeni", "biirdee"]
+  MONGODB_PRIVATE_KEY    = var.MONGODB_PRIVATE_KEY
+  MONGODB_PUBLIC_KEY     = var.MONGODB_PUBLIC_KEY
 }
