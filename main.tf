@@ -12,8 +12,10 @@ terraform {
       version = "3.1.0"
     }
     mongodbatlas = {
-      source  = "mongodb/mongodbatlas"
-      version = "0.9.1"
+      source      = "mongodb/mongodbatlas"
+      version     = "0.9.1"
+      public_key  = var.MONGODB_PUBLIC_KEY
+      private_key = var.MONGODB_PRIVATE_KEY
     }
   }
   required_version = "~> 1.0.2"
