@@ -12,7 +12,7 @@ terraform {
       version = "3.1.0"
     }
     mongodbatlas = {
-      source  = "terraform-providers/mongodbatlas"
+      source  = "mongodb/mongodbatlas"
       version = "0.9.1"
     }
   }
