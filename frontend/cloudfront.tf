@@ -219,9 +219,6 @@ module "log_bucket" {
 
 
 
-
-
-
 ###########################
 # Origin Access Identities
 ###########################

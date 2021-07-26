@@ -7,143 +7,6 @@ locals {
 
 }
 
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = " ~> 3.2.0"
-
-  name = "xeniapp-vpc-${var.env_name}"
-  cidr = "10.0.0.0/16"
-
-  azs = [
-    "${var.region}a",
-    "${var.region}b",
-  "${var.region}c"]
-  private_subnets = [
-    "10.0.1.0/24",
-    "10.0.2.0/24",
-  "10.0.3.0/24"]
-  public_subnets = [
-    "10.0.101.0/24",
-    "10.0.102.0/24",
-  "10.0.103.0/24"]
-
-  enable_nat_gateway     = true
-  single_nat_gateway     = false
-  one_nat_gateway_per_az = true
-
-  enable_flow_log                      = true
-  create_flow_log_cloudwatch_log_group = true
-  create_flow_log_cloudwatch_iam_role  = true
-  flow_log_max_aggregation_interval    = 60
-
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  public_dedicated_network_acl  = true
-  private_dedicated_network_acl = true
-  private_inbound_acl_rules     = local.network_acls.default_inbound
-  private_outbound_acl_rules    = local.network_acls.default_outbound
-  public_inbound_acl_rules      = local.network_acls.public_inbound
-  public_outbound_acl_rules     = local.network_acls.public_outbound
-
-
-}
-resource "aws_security_group" "endpoints" {
-  description = "Security group for VPC endpoints"
-  name        = "endpoints-sg-${var.env_name}"
-  tags = {
-    Name = "endpoints-sg-${var.env_name}"
-  }
-  vpc_id = module.vpc.vpc_id
-}
-
-
-resource "aws_security_group_rule" "endpoints-https" {
-  cidr_blocks = [
-  module.vpc.vpc_cidr_block]
-
-  description       = "HTTPS access from private subnet"
-  from_port         = 443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.endpoints.id
-  to_port           = 443
-  type              = "ingress"
-}
-module "vpc_endpoints" {
-  source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = " ~> 3.2.0"
-  vpc_id  = module.vpc.vpc_id
-  security_group_ids = [
-  aws_security_group.endpoints.id]
-
-  endpoints = {
-    s3 = {
-      service = "s3"
-      tags = {
-        Name = "s3-endpoint-${var.env_name}"
-      }
-    },
-    ssm = {
-      service             = "ssm"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets,
-      tags = {
-        Name = "ssm-endpoint-${var.env_name}"
-      }
-
-    },
-    ssmmessages = {
-      service             = "ssmmessages"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-      tags = {
-        Name = "ssmmessages-endpoint-${var.env_name}"
-      }
-    },
-    ec2 = {
-      service             = "ec2"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-      tags = {
-        Name = "ec2-endpoint-${var.env_name}"
-      }
-
-    },
-    ec2messages = {
-      service             = "ec2messages"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-      tags = {
-        Name = "ec2messages-endpoint-${var.env_name}"
-      }
-    },
-    kms = {
-      service             = "kms"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-      tags = {
-        Name = "kms-endpoint-${var.env_name}"
-      }
-
-    },
-    codedeploy = {
-      service             = "codedeploy"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-      tags = {
-        Name = "codedeploy-endpoint-${var.env_name}"
-      }
-    },
-    codedeploy_commands_secure = {
-      service             = "codedeploy-commands-secure"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-      tags = {
-        Name = "cd-commands-secure-endpoint-${var.env_name}"
-      }
-    },
-  }
-}
 
 ###################
 # HTTP API Gateway
@@ -411,11 +274,13 @@ module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 3.0"
 
-  domain_name = "*.${local.domain_suffix}" //${var.env_name}.api.${local.tld_domain_name}
-  zone_id     = coalescelist(data.aws_route53_zone.top_level_dns_zone.*.zone_id)[0]
+  domain_name = "*.${local.domain_suffix}"
+  //${var.env_name}.api.${local.tld_domain_name}
+  zone_id = coalescelist(data.aws_route53_zone.top_level_dns_zone.*.zone_id)[0]
 
   subject_alternative_names = [
-    local.domain_suffix //"api.${local.tld_domain_name}"
+    local.domain_suffix
+    //"api.${local.tld_domain_name}"
   ]
 
   wait_for_validation = true
@@ -439,11 +304,23 @@ resource "aws_route53_record" "a-route-53-customers" {
   for_each = var.customer_domain_prefix
   zone_id  = data.aws_route53_zone.top_level_dns_zone.zone_id
 
-  name = "${each.value}.${local.domain_suffix}" // e.g. xeni.dev.api.xeniapp.com
+  name = "${each.value}.${local.domain_suffix}"
+  // e.g. xeni.dev.api.xeniapp.com
   type = "A"
   alias {
     name                   = aws_alb.backend-alb.dns_name
     zone_id                = aws_alb.backend-alb.zone_id
     evaluate_target_health = false
   }
+}
+
+
+module "mongodb" {
+  source             = "./mongodb"
+  region             = var.region
+  atlas_project_id   = "60ae824fac63ca5d66f040b1"
+  atlas_org_id       = "60ae824fac63ca5d66f040ab"
+  subnet_ids         = module.vpc.private_subnets
+  security_group_ids = [aws_security_group.endpoints.id]
+  vpc_id             = module.vpc.vpc_id
 }
