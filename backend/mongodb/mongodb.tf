@@ -44,9 +44,10 @@ resource "aws_vpc_endpoint" "atlas_endpoint_service" {
   security_group_ids = var.security_group_ids
 }
 
-resource "mongodbatlas_privatelink_endpoint_service" "atlaseplink" {
-  project_id            = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.project_id
-  private_link_id       = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.private_link_id
-  interface_endpoint_id = aws_vpc_endpoint.atlas_endpoint_service.id
+resource "mongodbatlas_privatelink_endpoint_service" "atlas_private_link" {
+  project_id          = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.project_id
+  private_link_id     = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.id
+  endpoint_service_id = aws_vpc_endpoint.atlas_endpoint_service.id
+  provider_name       = "AWS"
 }
 

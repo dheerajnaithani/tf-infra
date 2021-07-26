@@ -1,3 +1,4 @@
 **/.terraform
 /.idea/
 /tf-infra.iml
+/.terraform.lock.hcl
