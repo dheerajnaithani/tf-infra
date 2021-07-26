@@ -317,7 +317,7 @@ resource "aws_route53_record" "a-route-53-customers" {
 
 module "mongodb" {
   source              = "./mongodb"
-  region              = var.region
+  region              = "US_EAST_1"
   atlas_project_id    = "60ae824fac63ca5d66f040b1"
   atlas_org_id        = "60ae824fac63ca5d66f040ab"
   subnet_ids          = module.vpc.private_subnets
