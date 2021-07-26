@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    mongodbatlas = {
+      source = "mongodb/mongodbatlas"
+    }
+  }
+}
+
 provider "mongodbatlas" {
   public_key  = var.MONGODB_PUBLIC_KEY
   private_key = var.MONGODB_PRIVATE_KEY
