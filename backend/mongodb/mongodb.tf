@@ -25,12 +25,11 @@ resource "mongodbatlas_cluster" "atlas_cluster" {
   disk_size_gb                = 10
   provider_disk_iops          = 100
   provider_volume_type        = "STANDARD"
-  provider_encrypt_ebs_volume = true
   provider_instance_size_name = "M10"
   provider_region_name        = var.region
 }
 
-resource "mongodbatlas_private_endpoint" "atlas_private_endpoint" {
+resource "mongodbatlas_privatelink_endpoint" "atlas_private_endpoint" {
   project_id    = var.atlas_project_id
   provider_name = "AWS"
   region        = var.region
@@ -39,15 +38,15 @@ resource "mongodbatlas_private_endpoint" "atlas_private_endpoint" {
 
 resource "aws_vpc_endpoint" "atlas_endpoint_service" {
   vpc_id             = var.vpc_id
-  service_name       = mongodbatlas_private_endpoint.atlas_private_endpoint.endpoint_service_name
+  service_name       = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.endpoint_service_name
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnet_ids
   security_group_ids = var.security_group_ids
 }
 
-resource "mongodbatlas_private_endpoint_interface_link" "atlaseplink" {
-  project_id            = mongodbatlas_private_endpoint.atlas_private_endpoint.project_id
-  private_link_id       = mongodbatlas_private_endpoint.atlas_private_endpoint.private_link_id
+resource "mongodbatlas_privatelink_endpoint_service" "atlaseplink" {
+  project_id            = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.project_id
+  private_link_id       = mongodbatlas_privatelink_endpoint.atlas_private_endpoint.private_link_id
   interface_endpoint_id = aws_vpc_endpoint.atlas_endpoint_service.id
 }
 
