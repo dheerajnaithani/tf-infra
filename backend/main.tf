@@ -316,13 +316,21 @@ resource "aws_route53_record" "a-route-53-customers" {
 
 
 module "mongodb" {
-  source              = "./mongodb"
-  region              = "US_EAST_1"
-  atlas_project_id    = "60ae824fac63ca5d66f040b1"
-  atlas_org_id        = "60ae824fac63ca5d66f040ab"
-  subnet_ids          = module.vpc.private_subnets
-  security_group_ids  = [aws_security_group.endpoints.id]
-  vpc_id              = module.vpc.vpc_id
-  MONGODB_PRIVATE_KEY = var.MONGODB_PRIVATE_KEY
-  MONGODB_PUBLIC_KEY  = var.MONGODB_PUBLIC_KEY
+  source                 = "./mongodb"
+  region                 = "us-east-1"
+  atlas_org_id           = "60ae824fac63ca5d66f040ab"
+  subnet_ids             = module.vpc.private_subnets
+  security_group_ids     = [aws_security_group.endpoints.id]
+  vpc_id                 = module.vpc.vpc_id
+  mongodb_private_key    = var.mongodb_private_key
+  mongodb_public_key     = var.mongodb_public_key
+  env_name               = var.env_name
+  atlas_vpc_cidr         = "192.168.248.0/21"
+  vpc_cidr               = module.vpc.vpc_cidr_block
+  route_table_ids        = toset(module.vpc.private_route_table_ids)
+  admin_users            = ["admin@xeniapp.com", "dheeraj@xeniapp.com"]
+  read_write_admin_users = ["admin@xeniapp.com", "dheeraj@xeniapp.com"]
+
 }
+
+

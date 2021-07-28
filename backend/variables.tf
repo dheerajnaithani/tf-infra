@@ -22,9 +22,9 @@ variable "customer_domain_prefix" {
   type = set(string)
 }
 
-variable "MONGODB_PUBLIC_KEY" {
+variable "mongodb_public_key" {
   description = "The public API key for MongoDB Atlas"
 }
-variable "MONGODB_PRIVATE_KEY" {
+variable "mongodb_private_key" {
   description = "The private API key for MongoDB Atlas"
 }

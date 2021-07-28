@@ -1,13 +1,21 @@
-variable "MONGODB_PUBLIC_KEY" {
+variable "mongodb_public_key" {
   description = "The public API key for MongoDB Atlas"
 }
-variable "MONGODB_PRIVATE_KEY" {
+variable "mongodb_private_key" {
   description = "The private API key for MongoDB Atlas"
 }
 
-variable "atlas_project_id" {
-  description = "Atlas project ID"
+variable "env_name" {
+  type = string
 }
+variable "admin_users" {
+
+}
+
+variable "read_write_admin_users" {
+
+}
+
 variable "region" {
 
   description = "Atlas Region"
@@ -29,3 +37,15 @@ variable "security_group_ids" {
 
 }
 
+variable "atlas_vpc_cidr" {
+  description = "Atlas CIDR"
+
+}
+
+variable "vpc_cidr" {
+
+}
+
+variable "route_table_ids" {
+
+}
