@@ -6,7 +6,7 @@ locals {
   domain_suffix   = "${var.env_name}.api.${local.tld_domain_name}"
 
 }
-
+data "aws_caller_identity" "current" {}
 
 ###################
 # HTTP API Gateway
@@ -232,6 +232,37 @@ resource "aws_security_group_rule" "allow_outgoing_traffic_to_vpc" {
 #########################################
 # IAM policy
 #########################################
+module "iam_policy" {
+  source = "terraform-aws-modules/iam/aws//modules/iam-policy"
+
+  name        = "ec2-secret-manager-policy-${var.env_name}"
+  path        = "/${var.env_name}"
+  description = "secret manager policy for ${var.env_name}"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:/dev/*",
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "secretsmanager:ListSecrets",
+            "Resource": "/dev/*"
+        }
+}
+EOF
+}
 module "iam_assumable_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   version = "~> 3.0"
@@ -248,8 +279,8 @@ module "iam_assumable_role" {
 
   custom_role_policy_arns = [
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
-
+    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy",
+    module.iam_policy.arn
   ]
 
   tags = {
@@ -330,6 +361,7 @@ module "mongodb" {
   route_table_ids        = toset(module.vpc.private_route_table_ids)
   admin_users            = ["admin@xeniapp.com", "dheeraj@xeniapp.com"]
   read_write_admin_users = ["admin@xeniapp.com", "dheeraj@xeniapp.com"]
+  iam_role_for_access    = module.iam_assumable_role.this_iam_role_arn
 
 }
 

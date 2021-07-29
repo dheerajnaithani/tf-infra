@@ -5,6 +5,11 @@ terraform {
     }
   }
 }
+locals {
+  connection_string = {
+
+  }
+}
 
 provider "mongodbatlas" {
   public_key  = var.mongodb_public_key
@@ -147,4 +152,22 @@ resource "aws_secretsmanager_secret" "app_user_password" {
 resource "aws_secretsmanager_secret_version" "app_user_password_version" {
   secret_id     = aws_secretsmanager_secret.app_user_password.id
   secret_string = random_password.app_user_password.result
+}
+
+resource "aws_ssm_parameter" "atlas_standard_connection_string" {
+  name = format("/%s/%s/%s/connection-string/standard", var.env_name, mongodbatlas_cluster.atlas_cluster.name, mongodbatlas_project
+  .xeniapp_atlas_project.name)
+  type = "String"
+  value = lookup(concat(mongodbatlas_cluster.atlas_cluster.connection_strings, [{
+  standard : "" }])[0], "standard")
+
+}
+
+resource "aws_ssm_parameter" "atlas_standard_srv_connection_string" {
+  name = format("/%s/%s/%s/connection-string/standard_srv", var.env_name, mongodbatlas_cluster.atlas_cluster.name, mongodbatlas_project
+  .xeniapp_atlas_project.name)
+  type = "String"
+  value = lookup(concat(mongodbatlas_cluster.atlas_cluster.connection_strings, [{
+  standard_srv : "" }])[0], "standard_srv")
+
 }

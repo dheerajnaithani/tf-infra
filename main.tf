@@ -47,7 +47,7 @@ module "backend" {
   env_name               = var.env_name
   region                 = local.region
   ec2_instance_count     = 3
-  ami_id                 = "ami-0305323a98dceb84e"
+  ami_id                 = "ami-0dd0113b2bd943526"
   top_level_domain_name  = "clubxeni.com"
   customer_domain_prefix = ["xeni", "biirdee"]
   mongodb_private_key    = var.mongodb_private_key
